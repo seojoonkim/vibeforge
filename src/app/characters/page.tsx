@@ -7,13 +7,40 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Users, Sparkles, Loader2 } from 'lucide-react'
+import { Plus, Users, Sparkles, Loader2, ImageIcon } from 'lucide-react'
 
 export default function CharactersPage() {
   const [open, setOpen] = useState(false)
   const [characters, setCharacters] = useState<any[]>([])
   const [generating, setGenerating] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [generatingImageFor, setGeneratingImageFor] = useState<string | null>(null)
+
+  const generateImage = async (characterId: string, stylePrompt: string) => {
+    setGeneratingImageFor(characterId)
+    try {
+      const res = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: stylePrompt, characterId })
+      })
+      
+      if (res.ok) {
+        const { imageUrl } = await res.json()
+        setCharacters(prev => prev.map(c => 
+          c.id === characterId ? { ...c, generated_image: imageUrl } : c
+        ))
+      } else {
+        const error = await res.json()
+        alert('이미지 생성 실패: ' + (error.error || 'Unknown error'))
+      }
+    } catch (e) {
+      console.error('Image generation error:', e)
+      alert('이미지 생성 중 오류가 발생했습니다.')
+    } finally {
+      setGeneratingImageFor(null)
+    }
+  }
 
   // Fetch characters on mount
   useEffect(() => {
@@ -266,11 +293,39 @@ export default function CharactersPage() {
           {characters.map((character) => (
             <Card key={character.id} className="cursor-pointer hover:border-primary transition-colors overflow-hidden">
               {/* Character Visual Preview */}
-              <div className="h-32 bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <Users className="h-12 w-12 mx-auto mb-1 opacity-80" />
-                  <span className="text-xs opacity-70">Visual Preview</span>
-                </div>
+              <div className="h-48 bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 flex items-center justify-center relative">
+                {character.generated_image ? (
+                  <img 
+                    src={character.generated_image} 
+                    alt={character.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-center text-white">
+                    {generatingImageFor === character.id ? (
+                      <>
+                        <Loader2 className="h-12 w-12 mx-auto mb-2 animate-spin opacity-80" />
+                        <span className="text-xs opacity-70">Generating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-80" />
+                        <Button 
+                          size="sm" 
+                          variant="secondary"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            generateImage(character.id, character.style_prompt)
+                          }}
+                          className="text-xs"
+                        >
+                          <Sparkles className="mr-1 h-3 w-3" />
+                          Generate Image
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
