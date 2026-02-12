@@ -1,9 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Replicate from 'replicate'
-
-const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN,
-})
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,21 +11,42 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Use SDXL Lightning for fast image generation
-    const output = await replicate.run(
-      "bytedance/sdxl-lightning-4step:5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637",
-      {
-        input: {
-          prompt: prompt,
-          num_outputs: 1,
-          width: 1024,
-          height: 1024
-        }
-      }
-    )
+    // Create prediction
+    const createRes = await fetch('https://api.replicate.com/v1/predictions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.REPLICATE_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        version: '5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637',
+        input: { prompt }
+      })
+    })
 
-    // output is an array of URLs
-    const imageUrl = Array.isArray(output) ? output[0] : output
+    const prediction = await createRes.json()
+    
+    if (prediction.error) {
+      throw new Error(prediction.error)
+    }
+
+    // Poll for completion
+    let result = prediction
+    while (result.status !== 'succeeded' && result.status !== 'failed') {
+      await new Promise(r => setTimeout(r, 1000))
+      const pollRes = await fetch(result.urls.get, {
+        headers: {
+          'Authorization': `Bearer ${process.env.REPLICATE_API_TOKEN}`
+        }
+      })
+      result = await pollRes.json()
+    }
+
+    if (result.status === 'failed') {
+      throw new Error(result.error || 'Generation failed')
+    }
+
+    const imageUrl = result.output?.[0]
 
     return NextResponse.json({ 
       imageUrl,
