@@ -43,8 +43,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unexpected response type' }, { status: 500 })
     }
 
-    // Parse the JSON response from Claude
-    const result = JSON.parse(content.text)
+    // Parse the JSON response from Claude (strip markdown code blocks if present)
+    let jsonText = content.text.trim()
+    if (jsonText.startsWith('```')) {
+      jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
+    }
+    const result = JSON.parse(jsonText)
 
     return NextResponse.json(result)
   } catch (error) {
