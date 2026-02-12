@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
       throw new Error(result.error || 'Generation failed')
     }
 
-    const imageUrl = result.output?.[0]
+    // Handle both array and string output formats
+    const imageUrl = Array.isArray(result.output) ? result.output[0] : result.output
 
     // Save to DB if characterId provided
     if (characterId && imageUrl) {
