@@ -8,13 +8,56 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Music, Play } from 'lucide-react'
+import { Plus, Music, Play, Sparkles, Loader2 } from 'lucide-react'
 
-const genres = ['Pop', 'Rock', 'Hip-Hop', 'Electronic', 'R&B', 'Jazz', 'Classical', 'Indie', 'K-Pop']
+const genres = ['City Pop', 'K-Pop', 'Pop', 'Rock', 'Hip-Hop', 'Electronic', 'R&B', 'Jazz', 'Lo-Fi', 'Indie']
 
 export default function TracksPage() {
   const [open, setOpen] = useState(false)
   const [tracks] = useState<any[]>([])
+  const [generating, setGenerating] = useState(false)
+
+  // Form state
+  const [quickPrompt, setQuickPrompt] = useState('')
+  const [title, setTitle] = useState('')
+  const [genre, setGenre] = useState('')
+  const [lyrics, setLyrics] = useState('')
+  const [generationPrompt, setGenerationPrompt] = useState('')
+  const [audioUrl, setAudioUrl] = useState('')
+
+  const handleAIAssist = async () => {
+    if (!quickPrompt.trim()) return
+    
+    setGenerating(true)
+    try {
+      const res = await fetch('/api/tracks/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: quickPrompt })
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setTitle(data.title || '')
+        setGenre(data.genre || '')
+        setLyrics(data.lyrics || '')
+        setGenerationPrompt(data.generationPrompt || '')
+      }
+    } catch (e) {
+      console.error('AI assist failed:', e)
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  const resetForm = () => {
+    setQuickPrompt('')
+    setTitle('')
+    setGenre('')
+    setLyrics('')
+    setGenerationPrompt('')
+    setAudioUrl('')
+  }
 
   return (
     <div className="space-y-6">
@@ -25,36 +68,88 @@ export default function TracksPage() {
             Manage your music tracks and lyrics
           </p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               New Track
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create Track</DialogTitle>
               <DialogDescription>
-                Add a new music track with lyrics
+                Describe your song and let AI create the details
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
+              {/* AI Assist Section */}
+              <div className="p-4 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="h-4 w-4 text-orange-500" />
+                  <span className="text-sm font-medium text-orange-700">AI Assist</span>
+                </div>
+                <Textarea 
+                  placeholder="한 줄로 곡 설명... e.g., 여름밤 드라이브에 어울리는 시티팝"
+                  value={quickPrompt}
+                  onChange={(e) => setQuickPrompt(e.target.value)}
+                  className="bg-white mb-2"
+                />
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  onClick={handleAIAssist}
+                  disabled={generating || !quickPrompt.trim()}
+                  className="w-full"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Generate All Fields
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    or fill manually
+                  </span>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Title</label>
-                  <Input placeholder="Track title..." />
+                  <label className="text-sm font-medium">
+                    Title <span className="text-red-500">*</span>
+                  </label>
+                  <Input 
+                    placeholder="Track title..." 
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Genre</label>
-                  <Select>
+                  <label className="text-sm font-medium">
+                    Genre <span className="text-red-500">*</span>
+                  </label>
+                  <Select value={genre} onValueChange={setGenre}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select genre" />
                     </SelectTrigger>
                     <SelectContent>
-                      {genres.map((genre) => (
-                        <SelectItem key={genre} value={genre.toLowerCase()}>
-                          {genre}
+                      {genres.map((g) => (
+                        <SelectItem key={g} value={g.toLowerCase()}>
+                          {g}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -62,26 +157,45 @@ export default function TracksPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Lyrics</label>
+                <label className="text-sm font-medium">
+                  Lyrics <span className="text-muted-foreground text-xs">(optional - leave empty for instrumental)</span>
+                </label>
                 <Textarea 
                   placeholder="Enter song lyrics..."
-                  className="min-h-[150px] font-mono"
+                  className="min-h-[120px] font-mono"
+                  value={lyrics}
+                  onChange={(e) => setLyrics(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Generation Prompt</label>
-                <Textarea placeholder="Style/mood description for AI music generation..." />
+                <label className="text-sm font-medium">
+                  Generation Prompt <span className="text-red-500">*</span>
+                </label>
+                <Textarea 
+                  placeholder="Style/mood description for AI music generation... e.g., upbeat city pop with 80s synth, female vocals, 120 BPM"
+                  value={generationPrompt}
+                  onChange={(e) => setGenerationPrompt(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Audio URL (optional)</label>
-                <Input placeholder="Link to existing audio file..." />
+                <label className="text-sm font-medium">
+                  Audio URL <span className="text-muted-foreground text-xs">(optional - if you have existing audio)</span>
+                </label>
+                <Input 
+                  placeholder="Link to existing audio file..." 
+                  value={audioUrl}
+                  onChange={(e) => setAudioUrl(e.target.value)}
+                />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={() => setOpen(false)}>
+              <Button 
+                onClick={() => setOpen(false)}
+                disabled={!title.trim() || !genre || !generationPrompt.trim()}
+              >
                 Create Track
               </Button>
             </DialogFooter>
