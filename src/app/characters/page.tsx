@@ -15,6 +15,7 @@ export default function CharactersPage() {
   const [generating, setGenerating] = useState(false)
   const [creating, setCreating] = useState(false)
   const [generatingImageFor, setGeneratingImageFor] = useState<string | null>(null)
+  const [selectedCharacter, setSelectedCharacter] = useState<any | null>(null)
 
   const generateImage = async (characterId: string, stylePrompt: string) => {
     setGeneratingImageFor(characterId)
@@ -291,7 +292,11 @@ export default function CharactersPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {characters.map((character) => (
-            <Card key={character.id} className="cursor-pointer hover:border-primary transition-colors overflow-hidden">
+            <Card 
+              key={character.id} 
+              className="cursor-pointer hover:border-primary transition-colors overflow-hidden"
+              onClick={() => setSelectedCharacter(character)}
+            >
               {/* Character Visual Preview */}
               <div className="h-48 bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 flex items-center justify-center relative">
                 {character.generated_image ? (
@@ -352,6 +357,113 @@ export default function CharactersPage() {
           ))}
         </div>
       )}
+
+      {/* Character Detail Dialog */}
+      <Dialog open={!!selectedCharacter} onOpenChange={(open) => !open && setSelectedCharacter(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          {selectedCharacter && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl">{selectedCharacter.name}</DialogTitle>
+                <DialogDescription>
+                  캐릭터 상세 정보
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="grid gap-6 py-4">
+                {/* Image Section */}
+                <div className="relative">
+                  {selectedCharacter.generated_image ? (
+                    <img 
+                      src={selectedCharacter.generated_image} 
+                      alt={selectedCharacter.name}
+                      className="w-full max-h-[400px] object-contain rounded-lg bg-muted"
+                    />
+                  ) : (
+                    <div className="h-64 bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                      <div className="text-center text-white">
+                        {generatingImageFor === selectedCharacter.id ? (
+                          <>
+                            <Loader2 className="h-16 w-16 mx-auto mb-3 animate-spin opacity-80" />
+                            <span className="text-sm opacity-70">이미지 생성 중...</span>
+                          </>
+                        ) : (
+                          <>
+                            <ImageIcon className="h-16 w-16 mx-auto mb-3 opacity-80" />
+                            <Button 
+                              variant="secondary"
+                              onClick={() => generateImage(selectedCharacter.id, selectedCharacter.style_prompt)}
+                            >
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              이미지 생성하기
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Info Section */}
+                <div className="space-y-4">
+                  {selectedCharacter.description && (
+                    <div>
+                      <h4 className="text-sm font-medium mb-1">설명</h4>
+                      <p className="text-sm text-muted-foreground">{selectedCharacter.description}</p>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Style Prompt</h4>
+                    <div className="bg-muted rounded-md p-3">
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedCharacter.style_prompt}</p>
+                    </div>
+                  </div>
+                  
+                  {selectedCharacter.reference_images?.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium mb-1">Reference Images</h4>
+                      <div className="flex gap-2 flex-wrap">
+                        {selectedCharacter.reference_images.map((url: string, i: number) => (
+                          <img key={i} src={url} alt={`ref-${i}`} className="h-20 w-20 object-cover rounded" />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="text-xs text-muted-foreground">
+                    생성일: {new Date(selectedCharacter.created_at).toLocaleString('ko-KR')}
+                  </div>
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setSelectedCharacter(null)}>
+                  닫기
+                </Button>
+                {!selectedCharacter.generated_image && (
+                  <Button 
+                    onClick={() => generateImage(selectedCharacter.id, selectedCharacter.style_prompt)}
+                    disabled={generatingImageFor === selectedCharacter.id}
+                  >
+                    {generatingImageFor === selectedCharacter.id ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        생성 중...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        이미지 생성
+                      </>
+                    )}
+                  </Button>
+                )}
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

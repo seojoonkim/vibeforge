@@ -16,6 +16,7 @@ export interface Database {
           description: string | null
           style_prompt: string
           reference_images: string[]
+          generated_image: string | null
           created_at: string
           updated_at: string
         }
@@ -25,6 +26,7 @@ export interface Database {
           description?: string | null
           style_prompt: string
           reference_images?: string[]
+          generated_image?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -34,6 +36,7 @@ export interface Database {
           description?: string | null
           style_prompt?: string
           reference_images?: string[]
+          generated_image?: string | null
           created_at?: string
           updated_at?: string
         }

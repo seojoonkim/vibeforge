@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,6 +48,14 @@ export async function POST(request: NextRequest) {
     }
 
     const imageUrl = result.output?.[0]
+
+    // Save to DB if characterId provided
+    if (characterId && imageUrl) {
+      const supabase = createServerClient()
+      await (supabase.from('characters') as any)
+        .update({ generated_image: imageUrl })
+        .eq('id', characterId)
+    }
 
     return NextResponse.json({ 
       imageUrl,
