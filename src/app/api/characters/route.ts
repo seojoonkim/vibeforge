@@ -39,10 +39,10 @@ export async function POST(request: NextRequest) {
       .from('characters')
       .insert({
         name,
-        description,
+        description: description || null,
         style_prompt,
         reference_images: reference_images || []
-      })
+      } as any)
       .select()
       .single()
     
