@@ -55,8 +55,8 @@ export async function PUT(
       updateData.reference_images = reference_images
     }
 
-    const { data, error } = await supabase
-      .from('characters')
+    const { data, error } = await (supabase
+      .from('characters') as any)
       .update(updateData)
       .eq('id', id)
       .select()
