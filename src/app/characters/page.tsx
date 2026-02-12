@@ -7,11 +7,51 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Users } from 'lucide-react'
+import { Plus, Users, Sparkles, Loader2 } from 'lucide-react'
 
 export default function CharactersPage() {
   const [open, setOpen] = useState(false)
   const [characters] = useState<any[]>([])
+  const [generating, setGenerating] = useState(false)
+  
+  // Form state
+  const [quickPrompt, setQuickPrompt] = useState('')
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [stylePrompt, setStylePrompt] = useState('')
+  const [referenceImages, setReferenceImages] = useState('')
+
+  const handleAIAssist = async () => {
+    if (!quickPrompt.trim()) return
+    
+    setGenerating(true)
+    try {
+      const res = await fetch('/api/characters/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: quickPrompt })
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setName(data.name || '')
+        setDescription(data.description || '')
+        setStylePrompt(data.stylePrompt || '')
+      }
+    } catch (e) {
+      console.error('AI assist failed:', e)
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  const resetForm = () => {
+    setQuickPrompt('')
+    setName('')
+    setDescription('')
+    setStylePrompt('')
+    setReferenceImages('')
+  }
 
   return (
     <div className="space-y-6">
@@ -22,7 +62,7 @@ export default function CharactersPage() {
             Define AI characters for consistent video generation
           </p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
@@ -33,35 +73,104 @@ export default function CharactersPage() {
             <DialogHeader>
               <DialogTitle>Create Character</DialogTitle>
               <DialogDescription>
-                Define your AI character&apos;s appearance and style
+                Describe your character and let AI fill in the details
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Name</label>
-                <Input placeholder="e.g., Luna, Neo, Aria..." />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
-                <Textarea placeholder="Brief description of the character..." />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Style Prompt</label>
+              {/* AI Assist Section */}
+              <div className="p-4 rounded-lg bg-gradient-to-r from-violet-50 to-pink-50 border border-violet-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="h-4 w-4 text-violet-500" />
+                  <span className="text-sm font-medium text-violet-700">AI Assist</span>
+                </div>
                 <Textarea 
-                  placeholder="Detailed visual description for AI generation... e.g., young woman with purple hair, cyberpunk style, neon lighting..."
-                  className="min-h-[100px]"
+                  placeholder="한 줄로 캐릭터 설명... e.g., 사이버펑크 스타일의 파란 머리 여성 아이돌"
+                  value={quickPrompt}
+                  onChange={(e) => setQuickPrompt(e.target.value)}
+                  className="bg-white mb-2"
+                />
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  onClick={handleAIAssist}
+                  disabled={generating || !quickPrompt.trim()}
+                  className="w-full"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Generate All Fields
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    or fill manually
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Name <span className="text-red-500">*</span>
+                </label>
+                <Input 
+                  placeholder="e.g., Luna, Neo, Aria..." 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Reference Images (URLs)</label>
-                <Input placeholder="Comma-separated image URLs..." />
+                <label className="text-sm font-medium">
+                  Description <span className="text-muted-foreground text-xs">(optional)</span>
+                </label>
+                <Textarea 
+                  placeholder="Brief description of the character..." 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Style Prompt <span className="text-red-500">*</span>
+                </label>
+                <Textarea 
+                  placeholder="Detailed visual description for AI generation... e.g., young woman with purple hair, cyberpunk style, neon lighting..."
+                  className="min-h-[100px]"
+                  value={stylePrompt}
+                  onChange={(e) => setStylePrompt(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Reference Images <span className="text-muted-foreground text-xs">(optional)</span>
+                </label>
+                <Input 
+                  placeholder="Comma-separated image URLs..." 
+                  value={referenceImages}
+                  onChange={(e) => setReferenceImages(e.target.value)}
+                />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={() => setOpen(false)}>
+              <Button 
+                onClick={() => setOpen(false)}
+                disabled={!name.trim() || !stylePrompt.trim()}
+              >
                 Create Character
               </Button>
             </DialogFooter>
