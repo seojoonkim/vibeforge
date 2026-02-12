@@ -49,7 +49,13 @@ export async function POST(req: Request) {
     return NextResponse.json(result)
   } catch (error) {
     console.error('AI Assist error:', error)
-    return NextResponse.json({ error: 'AI generation failed' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const hasApiKey = !!process.env.ANTHROPIC_API_KEY
+    return NextResponse.json({ 
+      error: 'AI generation failed',
+      details: errorMessage,
+      hasApiKey 
+    }, { status: 500 })
   }
 }
 
