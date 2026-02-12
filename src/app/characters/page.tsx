@@ -32,14 +32,24 @@ export default function CharactersPage() {
         body: JSON.stringify({ type: 'character', prompt: quickPrompt })
       })
       
-      if (res.ok) {
-        const data = await res.json()
-        setName(data.name || '')
-        setDescription(data.description || data.personality || '')
-        setStylePrompt(data.stylePrompt || '')
+      console.log('[AI Assist] Response status:', res.status)
+      
+      const data = await res.json()
+      console.log('[AI Assist] Response data:', data)
+      
+      if (!res.ok) {
+        console.error('[AI Assist] API error:', data.error || data)
+        return
       }
+      
+      // Map API response fields to form state
+      setName(data.name || '')
+      setDescription(data.description || data.personality || '')
+      setStylePrompt(data.stylePrompt || '')
+      
+      console.log('[AI Assist] Fields set - name:', data.name, 'stylePrompt:', data.stylePrompt?.substring(0, 50) + '...')
     } catch (e) {
-      console.error('AI assist failed:', e)
+      console.error('[AI Assist] Exception:', e)
     } finally {
       setGenerating(false)
     }
