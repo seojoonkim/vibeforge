@@ -16,16 +16,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Use FLUX for high-quality image generation
+    // Use SDXL Lightning for fast image generation
     const output = await replicate.run(
-      "black-forest-labs/flux-schnell",
+      "bytedance/sdxl-lightning-4step:5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637",
       {
         input: {
           prompt: prompt,
           num_outputs: 1,
-          aspect_ratio: "1:1",
-          output_format: "webp",
-          output_quality: 90
+          width: 1024,
+          height: 1024
         }
       }
     )
