@@ -444,7 +444,7 @@ export default function CharactersPage() {
 
       {/* Character Detail Dialog */}
       <Dialog open={!!selectedCharacter} onOpenChange={(open) => { if (!open) { setSelectedCharacter(null); cancelEditing(); } }}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           {selectedCharacter && (
             <>
               <DialogHeader>
@@ -474,17 +474,17 @@ export default function CharactersPage() {
                 </div>
               </DialogHeader>
               
-              <div className="grid gap-6 py-4">
-                {/* Image Section */}
-                <div className="relative">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+                {/* Image Section - Left */}
+                <div className="relative flex items-start justify-center">
                   {selectedCharacter.generated_image ? (
                     <img 
                       src={selectedCharacter.generated_image} 
                       alt={selectedCharacter.name}
-                      className="w-full max-h-[400px] object-contain rounded-lg bg-muted"
+                      className="w-full max-h-[600px] object-contain rounded-lg bg-muted"
                     />
                   ) : (
-                    <div className="h-64 bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                    <div className="w-full aspect-[9/16] max-h-[600px] bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
                       <div className="text-center text-white">
                         {generatingImageFor === selectedCharacter.id ? (
                           <>
@@ -508,7 +508,7 @@ export default function CharactersPage() {
                   )}
                 </div>
                 
-                {/* Info Section - View or Edit Mode */}
+                {/* Info Section - Right */}
                 {isEditing ? (
                   <div className="space-y-4">
                     <div className="space-y-2">
@@ -532,7 +532,7 @@ export default function CharactersPage() {
                         Style Prompt <span className="text-red-500">*</span>
                       </label>
                       <Textarea 
-                        className="min-h-[120px]"
+                        className="min-h-[200px]"
                         value={editForm.style_prompt}
                         onChange={(e) => setEditForm(prev => ({ ...prev, style_prompt: e.target.value }))}
                       />
@@ -549,7 +549,7 @@ export default function CharactersPage() {
                     
                     <div>
                       <h4 className="text-sm font-medium mb-1">Style Prompt</h4>
-                      <div className="bg-muted rounded-md p-3">
+                      <div className="bg-muted rounded-md p-3 max-h-[300px] overflow-y-auto">
                         <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedCharacter.style_prompt}</p>
                       </div>
                     </div>

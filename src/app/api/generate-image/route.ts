@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
         input: { 
           prompt: animePrompt,
           negative_prompt: negativePrompt,
-          width: 1024,
-          height: 1024,
+          width: 768,
+          height: 1344,
           guidance_scale: 7,
           num_inference_steps: 28
         }
