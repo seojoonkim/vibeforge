@@ -89,7 +89,7 @@ export default function TracksPage() {
           title: title.trim(),
           genre,
           lyrics: lyrics.trim() || null,
-          generation_prompt: generationPrompt.trim(),
+          prompt: generationPrompt.trim(),
           audio_url: audioUrl.trim() || null
         })
       })

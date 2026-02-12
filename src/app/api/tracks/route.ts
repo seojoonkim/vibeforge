@@ -25,7 +25,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { title, genre, lyrics, generation_prompt, audio_url } = body
+    const { title, genre, lyrics, prompt, audio_url } = body
 
     if (!title) {
       return NextResponse.json(
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         title,
         genre,
         lyrics,
-        generation_prompt,
+        prompt,
         audio_url
       })
       .select()
