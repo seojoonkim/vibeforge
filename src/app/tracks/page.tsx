@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -14,8 +14,26 @@ const genres = ['City Pop', 'K-Pop', 'Pop', 'Rock', 'Hip-Hop', 'Electronic', 'R&
 
 export default function TracksPage() {
   const [open, setOpen] = useState(false)
-  const [tracks] = useState<any[]>([])
+  const [tracks, setTracks] = useState<any[]>([])
   const [generating, setGenerating] = useState(false)
+  const [creating, setCreating] = useState(false)
+
+  // Fetch tracks on mount
+  const fetchTracks = async () => {
+    try {
+      const res = await fetch('/api/tracks')
+      if (res.ok) {
+        const data = await res.json()
+        setTracks(data)
+      }
+    } catch (e) {
+      console.error('Failed to fetch tracks:', e)
+    }
+  }
+
+  useEffect(() => {
+    fetchTracks()
+  }, [])
 
   // Form state
   const [quickPrompt, setQuickPrompt] = useState('')
@@ -57,6 +75,40 @@ export default function TracksPage() {
     setLyrics('')
     setGenerationPrompt('')
     setAudioUrl('')
+  }
+
+  const handleCreateTrack = async () => {
+    if (!title.trim() || !genre || !generationPrompt.trim()) return
+    
+    setCreating(true)
+    try {
+      const res = await fetch('/api/tracks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          genre,
+          lyrics: lyrics.trim() || null,
+          generation_prompt: generationPrompt.trim(),
+          audio_url: audioUrl.trim() || null
+        })
+      })
+      
+      if (res.ok) {
+        const newTrack = await res.json()
+        setTracks(prev => [newTrack, ...prev])
+        setOpen(false)
+        resetForm()
+      } else {
+        const error = await res.json()
+        alert('트랙 생성 실패: ' + (error.error || 'Unknown error'))
+      }
+    } catch (e) {
+      console.error('Error creating track:', e)
+      alert('트랙 생성 중 오류가 발생했습니다.')
+    } finally {
+      setCreating(false)
+    }
   }
 
   return (
@@ -193,10 +245,17 @@ export default function TracksPage() {
                 Cancel
               </Button>
               <Button 
-                onClick={() => setOpen(false)}
-                disabled={!title.trim() || !genre || !generationPrompt.trim()}
+                onClick={handleCreateTrack}
+                disabled={!title.trim() || !genre || !generationPrompt.trim() || creating}
               >
-                Create Track
+                {creating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Track'
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
