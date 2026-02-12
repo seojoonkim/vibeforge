@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -11,8 +11,60 @@ import { Plus, Users, Sparkles, Loader2 } from 'lucide-react'
 
 export default function CharactersPage() {
   const [open, setOpen] = useState(false)
-  const [characters] = useState<any[]>([])
+  const [characters, setCharacters] = useState<any[]>([])
   const [generating, setGenerating] = useState(false)
+  const [creating, setCreating] = useState(false)
+
+  // Fetch characters on mount
+  useEffect(() => {
+    fetchCharacters()
+  }, [])
+
+  const fetchCharacters = async () => {
+    try {
+      const res = await fetch('/api/characters')
+      if (res.ok) {
+        const data = await res.json()
+        setCharacters(data)
+      }
+    } catch (e) {
+      console.error('Failed to fetch characters:', e)
+    }
+  }
+
+  const handleCreateCharacter = async () => {
+    if (!name.trim() || !stylePrompt.trim()) return
+    
+    setCreating(true)
+    try {
+      const res = await fetch('/api/characters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim(),
+          style_prompt: stylePrompt.trim(),
+          reference_images: referenceImages ? referenceImages.split(',').map(s => s.trim()).filter(Boolean) : []
+        })
+      })
+      
+      if (res.ok) {
+        const newCharacter = await res.json()
+        setCharacters(prev => [newCharacter, ...prev])
+        setOpen(false)
+        resetForm()
+      } else {
+        const error = await res.json()
+        console.error('Failed to create character:', error)
+        alert('캐릭터 생성 실패: ' + (error.error || 'Unknown error'))
+      }
+    } catch (e) {
+      console.error('Error creating character:', e)
+      alert('캐릭터 생성 중 오류가 발생했습니다.')
+    } finally {
+      setCreating(false)
+    }
+  }
   
   // Form state
   const [quickPrompt, setQuickPrompt] = useState('')
@@ -178,10 +230,17 @@ export default function CharactersPage() {
                 Cancel
               </Button>
               <Button 
-                onClick={() => setOpen(false)}
-                disabled={!name.trim() || !stylePrompt.trim()}
+                onClick={handleCreateCharacter}
+                disabled={!name.trim() || !stylePrompt.trim() || creating}
               >
-                Create Character
+                {creating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Character'
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
