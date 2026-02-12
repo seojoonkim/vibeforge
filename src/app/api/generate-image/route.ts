@@ -12,12 +12,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Enhance prompt for anime style
-    const animePrompt = `${prompt}, masterpiece, best quality, 2d anime style, anime key visual, Japanese anime, cel shading, clean lineart, vibrant colors, by A-1 Pictures, studio quality`
+    // Enhance prompt for anime style (Illustrious XL optimized)
+    const animePrompt = `${prompt}, masterpiece, best quality, highly detailed, beautiful lighting`
     
-    const negativePrompt = 'photorealistic, 3d render, realistic, photograph, bad anatomy, blurry, low quality, worst quality, ugly, deformed'
+    const negativePrompt = 'lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, 3d, realistic, photorealistic'
 
-    // Create prediction with stability-ai/sdxl (better for anime with right prompts)
+    // Create prediction with Illustrious XL (niji-style anime model)
     const createRes = await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: {
@@ -25,13 +25,14 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        version: '7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc',
+        version: '87651edd4668d09df2afc9eb5fcdde465fc276f89e3e12b2ff942119077510f1',
         input: { 
           prompt: animePrompt,
           negative_prompt: negativePrompt,
           width: 1024,
           height: 1024,
-          num_outputs: 1
+          guidance_scale: 7,
+          num_inference_steps: 28
         }
       })
     })
