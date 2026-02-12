@@ -26,16 +26,16 @@ export default function CharactersPage() {
     
     setGenerating(true)
     try {
-      const res = await fetch('/api/characters/generate', {
+      const res = await fetch('/api/ai-assist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: quickPrompt })
+        body: JSON.stringify({ type: 'character', prompt: quickPrompt })
       })
       
       if (res.ok) {
         const data = await res.json()
         setName(data.name || '')
-        setDescription(data.description || '')
+        setDescription(data.description || data.personality || '')
         setStylePrompt(data.stylePrompt || '')
       }
     } catch (e) {

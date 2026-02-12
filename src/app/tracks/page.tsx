@@ -30,16 +30,16 @@ export default function TracksPage() {
     
     setGenerating(true)
     try {
-      const res = await fetch('/api/tracks/generate', {
+      const res = await fetch('/api/ai-assist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: quickPrompt })
+        body: JSON.stringify({ type: 'track', prompt: quickPrompt })
       })
       
       if (res.ok) {
         const data = await res.json()
         setTitle(data.title || '')
-        setGenre(data.genre || '')
+        setGenre(data.genre?.toLowerCase() || '')
         setLyrics(data.lyrics || '')
         setGenerationPrompt(data.generationPrompt || '')
       }

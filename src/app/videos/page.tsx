@@ -35,17 +35,16 @@ export default function VideosPage() {
     
     setGenerating(true)
     try {
-      const res = await fetch('/api/videos/generate', {
+      const res = await fetch('/api/ai-assist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: quickPrompt })
+        body: JSON.stringify({ type: 'video', prompt: quickPrompt })
       })
       
       if (res.ok) {
         const data = await res.json()
         setTitle(data.title || '')
         setScenePrompt(data.scenePrompt || '')
-        // Character and track would need to be matched from existing data
       }
     } catch (e) {
       console.error('AI assist failed:', e)
