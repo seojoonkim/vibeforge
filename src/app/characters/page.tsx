@@ -382,12 +382,12 @@ export default function CharactersPage() {
               onClick={() => setSelectedCharacter(character)}
             >
               {/* Character Visual Preview */}
-              <div className="h-48 bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 flex items-center justify-center relative">
+              <div className="aspect-[3/4] bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 flex items-center justify-center relative">
                 {character.generated_image ? (
                   <img 
                     src={character.generated_image} 
                     alt={character.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-white"
                   />
                 ) : (
                   <div className="text-center text-white">
@@ -444,7 +444,7 @@ export default function CharactersPage() {
 
       {/* Character Detail Dialog */}
       <Dialog open={!!selectedCharacter} onOpenChange={(open) => { if (!open) { setSelectedCharacter(null); cancelEditing(); } }}>
-        <DialogContent className="max-w-7xl w-[95vw] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-[1400px] max-h-[90vh] overflow-y-auto">
           {selectedCharacter && (
             <>
               <DialogHeader>
