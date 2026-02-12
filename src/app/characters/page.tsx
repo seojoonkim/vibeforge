@@ -84,7 +84,7 @@ export default function CharactersPage() {
                   <span className="text-sm font-medium text-violet-700">AI Assist</span>
                 </div>
                 <Textarea 
-                  placeholder="한 줄로 캐릭터 설명... e.g., 사이버펑크 스타일의 파란 머리 여성 아이돌"
+                  placeholder="캐릭터를 자유롭게 설명하세요 (여러 줄 가능)&#10;&#10;예시:&#10;20대 여성 아이돌&#10;사이버펑크 스타일&#10;파란색 숏컷 헤어"
                   value={quickPrompt}
                   onChange={(e) => setQuickPrompt(e.target.value)}
                   className="bg-white mb-2"

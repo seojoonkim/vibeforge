@@ -94,7 +94,7 @@ export default function VideosPage() {
                   <span className="text-sm font-medium text-cyan-700">AI Assist</span>
                 </div>
                 <Textarea 
-                  placeholder="한 줄로 뮤비 설명... e.g., 네온 도시 배경의 사이버펑크 댄스 뮤비"
+                  placeholder="뮤비를 자유롭게 설명하세요 (여러 줄 가능)&#10;&#10;예시:&#10;네온 도시 배경 사이버펑크&#10;댄스 퍼포먼스 중심&#10;밤거리 + 루프탑 씬"
                   value={quickPrompt}
                   onChange={(e) => setQuickPrompt(e.target.value)}
                   className="bg-white mb-2"

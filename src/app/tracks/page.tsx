@@ -90,7 +90,7 @@ export default function TracksPage() {
                   <span className="text-sm font-medium text-orange-700">AI Assist</span>
                 </div>
                 <Textarea 
-                  placeholder="한 줄로 곡 설명... e.g., 여름밤 드라이브에 어울리는 시티팝"
+                  placeholder="곡을 자유롭게 설명하세요 (여러 줄 가능)&#10;&#10;예시:&#10;여름밤 드라이브에 어울리는 시티팝&#10;80년대 레트로 신스&#10;여성 보컬, 120 BPM"
                   value={quickPrompt}
                   onChange={(e) => setQuickPrompt(e.target.value)}
                   className="bg-white mb-2"
