@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -19,8 +19,25 @@ const statusColors: Record<string, 'default' | 'secondary' | 'destructive' | 'ou
 
 export default function VideosPage() {
   const [open, setOpen] = useState(false)
-  const [videos] = useState<any[]>([])
+  const [videos, setVideos] = useState<any[]>([])
   const [generating, setGenerating] = useState(false)
+  const [creating, setCreating] = useState(false)
+
+  const fetchVideos = async () => {
+    try {
+      const res = await fetch('/api/videos')
+      if (res.ok) {
+        const data = await res.json()
+        setVideos(data)
+      }
+    } catch (e) {
+      console.error('Failed to fetch videos:', e)
+    }
+  }
+
+  useEffect(() => {
+    fetchVideos()
+  }, [])
 
   // Form state
   const [quickPrompt, setQuickPrompt] = useState('')
@@ -60,6 +77,38 @@ export default function VideosPage() {
     setTrack('')
     setResolution('1080p')
     setScenePrompt('')
+  }
+
+  const handleCreateVideo = async () => {
+    if (!title.trim() || !scenePrompt.trim()) return
+    
+    setCreating(true)
+    try {
+      const res = await fetch('/api/videos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          scene_prompt: scenePrompt.trim(),
+          resolution
+        })
+      })
+      
+      if (res.ok) {
+        const newVideo = await res.json()
+        setVideos(prev => [newVideo, ...prev])
+        setOpen(false)
+        resetForm()
+      } else {
+        const error = await res.json()
+        alert('비디오 생성 실패: ' + (error.error || 'Unknown error'))
+      }
+    } catch (e) {
+      console.error('Error creating video:', e)
+      alert('비디오 생성 중 오류가 발생했습니다.')
+    } finally {
+      setCreating(false)
+    }
   }
 
   return (
@@ -202,10 +251,17 @@ export default function VideosPage() {
                 Cancel
               </Button>
               <Button 
-                onClick={() => setOpen(false)}
-                disabled={!title.trim() || !scenePrompt.trim()}
+                onClick={handleCreateVideo}
+                disabled={!title.trim() || !scenePrompt.trim() || creating}
               >
-                Create Video
+                {creating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Video'
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>

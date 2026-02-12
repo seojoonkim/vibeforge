@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-// import { createServerClient } from '@/lib/supabase'
+import { createServerClient } from '@/lib/supabase'
 
 // GET all videos
 export async function GET() {
   try {
-    // TODO: Uncomment when Supabase is configured
-    // const supabase = createServerClient()
-    // const { data, error } = await supabase
-    //   .from('videos')
-    //   .select('*, tracks(title), characters(name)')
-    //   .order('created_at', { ascending: false })
+    const supabase = createServerClient()
+    const { data, error } = await (supabase
+      .from('videos') as any)
+      .select('*')
+      .order('created_at', { ascending: false })
     
-    // if (error) throw error
-    // return NextResponse.json(data)
-    
-    return NextResponse.json([])
+    if (error) throw error
+    return NextResponse.json(data)
   } catch (error) {
     console.error('Error fetching videos:', error)
     return NextResponse.json(
@@ -28,7 +25,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { title, track_id, character_id, project_id, resolution } = body
+    const { title, scene_prompt, resolution } = body
 
     if (!title) {
       return NextResponse.json(
@@ -37,38 +34,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // TODO: Uncomment when Supabase is configured
-    // const supabase = createServerClient()
-    // const { data, error } = await supabase
-    //   .from('videos')
-    //   .insert({
-    //     title,
-    //     track_id,
-    //     character_id,
-    //     project_id,
-    //     resolution: resolution || '1080p',
-    //     status: 'draft'
-    //   })
-    //   .select()
-    //   .single()
+    const supabase = createServerClient()
+    const { data, error } = await (supabase
+      .from('videos') as any)
+      .insert({
+        title,
+        scene_prompt,
+        resolution: resolution || '1080p',
+        status: 'draft'
+      })
+      .select()
+      .single()
     
-    // if (error) throw error
-    // return NextResponse.json(data)
-
-    // Mock response
-    return NextResponse.json({
-      id: crypto.randomUUID(),
-      title,
-      track_id,
-      character_id,
-      project_id,
-      resolution: resolution || '1080p',
-      status: 'draft',
-      storyboard: [],
-      clips: [],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    })
+    if (error) throw error
+    return NextResponse.json(data)
   } catch (error) {
     console.error('Error creating video:', error)
     return NextResponse.json(
