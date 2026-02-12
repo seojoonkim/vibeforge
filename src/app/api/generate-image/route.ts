@@ -12,7 +12,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create prediction
+    // Enhance prompt for anime style
+    const animePrompt = `${prompt}, masterpiece, best quality, 2d anime style, anime key visual, Japanese anime, cel shading, clean lineart, vibrant colors, by A-1 Pictures, studio quality`
+    
+    const negativePrompt = 'photorealistic, 3d render, realistic, photograph, bad anatomy, blurry, low quality, worst quality, ugly, deformed'
+
+    // Create prediction with stability-ai/sdxl (better for anime with right prompts)
     const createRes = await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: {
@@ -20,8 +25,14 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        version: '5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637',
-        input: { prompt }
+        version: '7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc',
+        input: { 
+          prompt: animePrompt,
+          negative_prompt: negativePrompt,
+          width: 1024,
+          height: 1024,
+          num_outputs: 1
+        }
       })
     })
 
