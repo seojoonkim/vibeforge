@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-// import { createServerClient } from '@/lib/supabase'
+import { createServerClient } from '@/lib/supabase'
 
 // GET all characters
 export async function GET() {
   try {
-    // TODO: Uncomment when Supabase is configured
-    // const supabase = createServerClient()
-    // const { data, error } = await supabase
-    //   .from('characters')
-    //   .select('*')
-    //   .order('created_at', { ascending: false })
+    const supabase = createServerClient()
+    const { data, error } = await supabase
+      .from('characters')
+      .select('*')
+      .order('created_at', { ascending: false })
     
-    // if (error) throw error
-    // return NextResponse.json(data)
-    
-    return NextResponse.json([])
+    if (error) throw error
+    return NextResponse.json(data)
   } catch (error) {
     console.error('Error fetching characters:', error)
     return NextResponse.json(
@@ -37,32 +34,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // TODO: Uncomment when Supabase is configured
-    // const supabase = createServerClient()
-    // const { data, error } = await supabase
-    //   .from('characters')
-    //   .insert({
-    //     name,
-    //     description,
-    //     style_prompt,
-    //     reference_images: reference_images || []
-    //   })
-    //   .select()
-    //   .single()
+    const supabase = createServerClient()
+    const { data, error } = await supabase
+      .from('characters')
+      .insert({
+        name,
+        description,
+        style_prompt,
+        reference_images: reference_images || []
+      })
+      .select()
+      .single()
     
-    // if (error) throw error
-    // return NextResponse.json(data)
-
-    // Mock response
-    return NextResponse.json({
-      id: crypto.randomUUID(),
-      name,
-      description,
-      style_prompt,
-      reference_images: reference_images || [],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    })
+    if (error) throw error
+    return NextResponse.json(data)
   } catch (error) {
     console.error('Error creating character:', error)
     return NextResponse.json(
