@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
           width: 768,
           height: 1344,
           guidance_scale: 7,
-          num_inference_steps: 28
+          num_inference_steps: 20
         }
       })
     })
