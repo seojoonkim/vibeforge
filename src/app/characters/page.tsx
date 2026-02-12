@@ -264,22 +264,34 @@ export default function CharactersPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {characters.map((character) => (
-            <Card key={character.id} className="cursor-pointer hover:border-primary transition-colors">
-              <CardHeader>
+            <Card key={character.id} className="cursor-pointer hover:border-primary transition-colors overflow-hidden">
+              {/* Character Visual Preview */}
+              <div className="h-32 bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 flex items-center justify-center">
+                <div className="text-center text-white">
+                  <Users className="h-12 w-12 mx-auto mb-1 opacity-80" />
+                  <span className="text-xs opacity-70">Visual Preview</span>
+                </div>
+              </div>
+              <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle>{character.name}</CardTitle>
-                  <Badge variant="secondary">
+                  <CardTitle className="text-lg">{character.name}</CardTitle>
+                  <Badge variant="secondary" className="text-xs">
                     {character.reference_images?.length || 0} refs
                   </Badge>
                 </div>
-                <CardDescription className="line-clamp-2">
-                  {character.description}
-                </CardDescription>
+                {character.description && (
+                  <CardDescription className="line-clamp-2 text-sm">
+                    {character.description}
+                  </CardDescription>
+                )}
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-3">
-                  {character.style_prompt}
-                </p>
+              <CardContent className="pt-0">
+                <div className="bg-muted/50 rounded-md p-2">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Style Prompt:</p>
+                  <p className="text-xs text-muted-foreground line-clamp-3">
+                    {character.style_prompt}
+                  </p>
+                </div>
               </CardContent>
             </Card>
           ))}
